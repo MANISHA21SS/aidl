@@ -25,21 +25,124 @@ Step 5: Design layout in activity_main.xml.
 
 Step 6: Display message give in MainActivity file(client/server).
 
-Step 7: Save and run the application.
-
 ## PROGRAM:
 ```
 /*
 Program to print the client/server services using AIDL”.
-Developed by:
-Registeration Number :
+Developed by: Manisha selvakumari.S.S.
+Registeration Number : 212223220055
 */
 ```
+## MainActivity.java:
+```
 
+package com.example.aidlclient;
+
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.widget.Button;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import com.example.aidlserver.IColorService;
+// this comes from the copied AIDL
+public class MainActivity extends AppCompatActivity
+{
+    private IColorService colorService;
+    private boolean isBound = false;
+    private Button btnChangeColor;
+    private ServiceConnection connection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
+        {
+            colorService = IColorService.Stub.asInterface(service);
+            isBound = true;
+            Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            isBound = false;
+            colorService = null;
+        }
+    };
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        btnChangeColor = findViewById(R.id.btnChangeColor);
+        btnChangeColor.setOnClickListener(v -> {
+            if (isBound && colorService != null) {
+                try {
+                    int randomColor = colorService.getRandomColor();
+                    btnChangeColor.setBackgroundColor(randomColor);
+                }
+                catch (RemoteException e)
+                {
+                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else
+            {
+                Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();        // Bind to the server's service
+        Intent intent = new Intent("com.example.aidlserver.IColorService");
+        intent.setPackage("com.example.aidlserver"); // tells Android which app
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        if (isBound)
+        {
+            unbindService(connection);
+            isBound = false;
+        }
+    }
+}
+```
+## MainActivity.XML:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+    <Button
+        android:id="@+id/btnChangeColor"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:text="Tap me!"
+        android:textSize="24sp" />
+</LinearLayout>
+
+
+```
 ## OUTPUT
+<img width="1902" height="1018" alt="image" src="https://github.com/user-attachments/assets/23d24136-a499-4a94-ae41-5824cc163a5a" />
+
+<img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/8888a4bb-f0e8-40c0-8d40-d779f2d496a4" />
 
 
 
 
 ## RESULT
 Thus a Simple Android Application to create a AIDL interface and communicate the process between client and server using AIDL interface in Android Studio is developed and executed successfully.
+
+
+Step 7: Save and run the application.
+
